@@ -1,115 +1,167 @@
 #include <iostream>
 #include <conio.h>
+#include <Windows.h>
 
 using namespace std;
 
 void Input();
 void Process();
 void Draw();
+void MovePlayer(int XDirection, int YDirection);
 
-// 1. 지도를 초기화 한다.
-char Map[10][10] = 
+bool IsGoal();
+
+void ChangeColor(int Color);
+
+//1. 지도를 초기화 한다.
+int Map[10][10] =
 {
 	{1,1,1,1,1,1,1,1,1,1},
+	{1,0,0,0,0,0,1,0,0,1},
+	{1,0,1,0,0,0,1,0,0,1},
+	{1,0,1,0,0,0,1,0,0,1},
+	{1,0,1,0,0,0,1,0,0,1},
 	{1,0,0,0,0,0,0,0,0,1},
-	{1,0,0,0,0,0,0,0,0,1},
-	{1,0,0,0,0,0,0,0,0,1},
-	{1,0,0,0,0,0,0,0,0,1},
-	{1,0,0,0,0,0,0,0,0,1},
-	{1,0,0,0,0,0,0,0,0,1},
-	{1,0,0,0,0,0,0,0,0,1},
-	{1,0,0,0,0,0,0,0,0,1},
-	{1,1,1,1,1,1,1,1,1,1},
+	{1,0,0,0,1,0,0,1,0,1},
+	{1,0,0,0,1,0,0,1,0,1},
+	{1,0,0,0,1,0,0,1,9,1},
+	{1,1,1,1,1,1,1,1,1,1}
 };
 
 int PlayerX = 1;
 int PlayerY = 1;
 
 bool bIsRunning = true;
-char Key;
+int Key;
+
 
 int main()
 {
-	while (bIsRunning)//반복하기위해 작성
+	while (bIsRunning)
 	{
 		Input();
 		Process();
 		Draw();
 	}
+	cout << "게임을 클리어 했습니다" << endl;
 	return 0;
-
 }
 
 void Input()
 {
-		// 2. 입력을 받는다.
+	Key = _getch();
+	if (Key == 0x00 || Key == 0xE0)
+	{
+		// 확장키의 경우 키를 하나더 입력 받는다.
 		Key = _getch();
-		
+	}
 }
 
 void Process()
 {
-	// 3. 처리한다.
-		//	  플레이어를 움직인다.
 	switch (Key)
 	{
-		case 'w':
+			//up
 		case 'W':
+		case 'w':
 		{
-			PlayerY--;
+			MovePlayer(0, -1);
 			break;
 		}
-
-		case 's':
+		//down
 		case 'S':
+		case 's':
 		{
-			PlayerY++;
+			MovePlayer(0, 1);
 			break;
 		}
-
-		case 'a':
+		//left
 		case 'A':
+		case 'a':
 		{
-			PlayerX--;
+			MovePlayer(-1, 0);
+			break;
+		}
+		//right
+		case 'D':
+		case 'd':
+		{
+			MovePlayer(1, 0);
 			break;
 		}
 
-		case 'd':
-		case 'D':
-		{
-			PlayerX++;
-			break;
-		}
-		case 'q':
+		//quit
 		case 'Q':
+		case 'q':
 		{
 			bIsRunning = false;
 			break;
 		}
 	}
+	if (IsGoal())
+	{
+		bIsRunning = false;
+	}
 }
 
 void Draw()
 {
-	// 4. 지도를 그린다.
-	system("cls");//화면을 지운다.
+	//화면을 지운다.
+	system("cls");
+
 	for (int Y = 0; Y < 10; ++Y)
 	{
 		for (int X = 0; X < 10; ++X)
 		{
 			if (PlayerX == X && PlayerY == Y)
 			{
-				cout << "P" << " ";
+				ChangeColor(171);
+				cout << "P";
+				ChangeColor(7);
+				cout << " ";
 			}
-			else if (Map[X][Y] == 0)
+			else if (Map[Y][X] == 0)
 			{
 				cout << " " << " ";
 			}
-			else if (Map[X][Y] == 1)
+			else if (Map[Y][X] == 1)
 			{
 				cout << "X" << " ";
 			}
+			else if (Map[Y][X] == 9)
+			{
+				ChangeColor(200);
+				cout << "G" ;
+				ChangeColor(7);
+				cout << " ";
+			}
 		}
+
 		cout << endl;
 	}
+}
+
+void MovePlayer(int XDirection, int YDirection)
+{
+	//새로 가볼곳 계산
+	int NewPlayerX = PlayerX + XDirection;
+	int NewPlayerY = PlayerY + YDirection;
+
+	//미리 가봄
+	if (Map[NewPlayerY][NewPlayerX] == 0 || Map[NewPlayerY][NewPlayerX] == 9)
+	{
+		//이동
+		PlayerX = NewPlayerX;
+		PlayerY = NewPlayerY;
+	}	
+}
+
+bool IsGoal()
+{
+	return Map[PlayerY][PlayerX] == 9 ? true : false; // ? 는 앞에 조건이 참이면 true 아니면 false
+}
+
+void ChangeColor(int Color)
+{
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), Color);
 }
